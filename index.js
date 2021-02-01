@@ -3,12 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const contactRouter = require('./routes/contact.routes');
-const {
-  listContacts,
-  removeContact,
-  getContactById,
-  addContact,
-} = require('./contacts');
+
 const PORT = process.env.port || 8080;
 
 class Server {
@@ -42,28 +37,3 @@ class Server {
 
 const server = new Server();
 server.start();
-
-// function invokeAction({ action, id, name, email, phone }) {
-//   switch (action) {
-//     case 'list':
-//       listContacts().then(el => console.table(el));
-//       break;
-
-//     case 'get':
-//       getContactById(id).then(el => console.table(el));
-//       break;
-
-//     case 'add':
-//       addContact(name, email, phone).then(el => console.table(el));
-//       break;
-
-//     case 'remove':
-//       removeContact(id).then(el => console.table(el));
-//       break;
-
-//     default:
-//       console.warn('\x1B[31m Unknown action type!');
-//   }
-// }
-
-// invokeAction(argv);
