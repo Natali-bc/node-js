@@ -3,18 +3,32 @@ const Joi = require('joi');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs').promises;
 const path = require('path');
-const contactsPath = path.join('../models/contacts.json');
+const contactsPath = path.join(__dirname, '../models/contacts.json');
 
 class ContactController {
   listContacts(req, res) {
     res.json(contacts);
   }
-  notfoundContct(contactId, res) {
+  notFoundContact(res, contactId) {
     const contact = contacts.find(el => el.id === contactId);
     if (!contact) {
       return res.status(404).send({ message: 'Not found' });
     }
   }
+  getContactById = (req, res) => {
+    const {
+      params: { contactId },
+    } = req;
+
+    notFoundContact(res, contactId);
+
+    const contactIndex = this.findContactIndex(contactId);
+    res.json(contacts[contactIndex]);
+  };
+  findContactIndex = contactId => {
+    return contacts.findIndex(({ id }) => id === parseInt(contactId));
+  };
+
   addContact(req, res) {
     const { body } = req;
     const addedContact = {
@@ -22,11 +36,11 @@ class ContactController {
       ...body,
     };
     contacts.push(addedContact);
-    fs.writeFile(contactsPath, JSON.stringify(contactsPath));
-    res.status(200).send({ message: 'new contact' });
+    fs.writeFile(contactsPath, JSON.stringify(contacts));
+    res.status(201).send({ message: 'New contact' });
   }
   validateAddedContact(req, res, next) {
-    const validationRules = object().keys({
+    const validationRules = Joi.object().keys({
       name: Joi.string().required(),
       email: Joi.string().required(),
       phone: Joi.string().required(),
@@ -34,31 +48,29 @@ class ContactController {
     const validationResult = validationRules.validate(req.body);
 
     if (validationResult.error) {
-      return res.status(400).send({ message: 'missing required name field' });
+      return res.status(400).send({ message: 'Missing required field' });
     }
 
     next();
   }
-  findContactIndex = id => {
-    const contactId = parseInt(id);
-    return contacts.findIndex(({ id }) => id === contactId);
-  };
+
   updateContact = (req, res) => {
     const {
-      params: { id },
+      params: { contactId },
     } = req;
 
-    const contactIndex = this.findContactIndex(id);
-
+    const contactIndex = this.findContactIndex(contactId);
     const updatedContact = {
-      ...contacts[contactIndex],
+      // ...contacts[contactIndex],
+      ...req.contactIndex,
       ...req.body,
     };
     contacts[contactIndex] = updatedContact;
     res.json(updatedContact);
+    fs.writeFile(contactsPath, JSON.stringify(contacts));
   };
   validateUpdatedContact(req, res, next) {
-    const validationRules = object().keys({
+    const validationRules = Joi.object().keys({
       name: Joi.string(),
       email: Joi.string(),
       phone: Joi.string(),
@@ -66,22 +78,14 @@ class ContactController {
     const validationResult = validationRules.validate(req.body);
 
     if (validationResult.error) {
-      return res.status(400).send({ message: 'missing required name field' });
+      return res.status(400).send({ message: 'Missing fields' });
     }
-
     next();
   }
-  getContactById = (req, res) => {
-    const {
-      params: { contactId },
-    } = req;
-    notFound(res, contactId);
-    const contactIndex = this.findContactIndex(id);
-    res.json(contacts[contactIndex]);
-  };
+
   removeContact = (res, req) => {
     const {
-      params: { id },
+      params: { contactId },
     } = req;
     const contactIndex = this.findContactIndex(id);
     const removedContact = contacts.splice(contactIndex, 1);
@@ -90,15 +94,16 @@ class ContactController {
 
   validateId(req, res, next) {
     const {
-      params: { id },
+      params: { contactId },
     } = req;
-
-    const contactId = parseInt(id);
-    const contactIndex = contacts.findIndex(({ id }) => id === contactId);
+    console.log('contactId' + contactId);
+    const contactIndex = contacts.find(el => el.id === parseInt(contactId));
 
     if (contactIndex === -1) {
-      return res.status(400).send('"message": "contact deleted"');
+      return res.status(400).send({ message: 'contact deleted' });
     }
+    req.contactIndex = contactIndex;
+
     next();
   }
 }
