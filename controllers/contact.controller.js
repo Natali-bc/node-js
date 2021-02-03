@@ -9,22 +9,21 @@ class ContactController {
   listContacts(req, res) {
     res.json(contacts);
   }
-  notFoundContact(res, contactId) {
-    const contact = contacts.find(el => el.id === contactId);
-    if (!contact) {
-      return res.status(404).send({ message: 'Not found' });
-    }
-  }
+
   getContactById = (req, res) => {
     const {
       params: { contactId },
     } = req;
 
-    notFoundContact(res, contactId);
+    const contact = contacts.find(el => el.id === parseInt(contactId));
+    if (!contact) {
+      return res.status(404).send({ message: 'Not found' });
+    }
 
     const contactIndex = this.findContactIndex(contactId);
     res.json(contacts[contactIndex]);
   };
+
   findContactIndex = contactId => {
     return contacts.findIndex(({ id }) => id === parseInt(contactId));
   };
@@ -39,6 +38,7 @@ class ContactController {
     fs.writeFile(contactsPath, JSON.stringify(contacts));
     res.status(201).send({ message: 'New contact' });
   }
+
   validateAddedContact(req, res, next) {
     const validationRules = Joi.object().keys({
       name: Joi.string().required(),
@@ -61,7 +61,6 @@ class ContactController {
 
     const contactIndex = this.findContactIndex(contactId);
     const updatedContact = {
-      // ...contacts[contactIndex],
       ...req.contactIndex,
       ...req.body,
     };
@@ -69,6 +68,7 @@ class ContactController {
     res.json(updatedContact);
     fs.writeFile(contactsPath, JSON.stringify(contacts));
   };
+
   validateUpdatedContact(req, res, next) {
     const validationRules = Joi.object().keys({
       name: Joi.string(),
@@ -83,11 +83,11 @@ class ContactController {
     next();
   }
 
-  removeContact = (res, req) => {
+  removeContact = (req, res) => {
     const {
       params: { contactId },
     } = req;
-    const contactIndex = this.findContactIndex(id);
+    const contactIndex = this.findContactIndex(contactId);
     const removedContact = contacts.splice(contactIndex, 1);
     res.json(removedContact);
   };
@@ -96,7 +96,7 @@ class ContactController {
     const {
       params: { contactId },
     } = req;
-    console.log('contactId' + contactId);
+
     const contactIndex = contacts.find(el => el.id === parseInt(contactId));
 
     if (contactIndex === -1) {
