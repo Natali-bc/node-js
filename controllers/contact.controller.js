@@ -1,10 +1,3 @@
-// const contacts = require('../models/contacts.json');
-// const Joi = require('joi');
-// const { v4: uuidv4 } = require('uuid');
-// const fs = require('fs').promises;
-// const path = require('path');
-// const contactsPath = path.join(__dirname, '../models/contacts.json');
-
 const {
   Types: { ObjectId },
 } = require('mongoose');
@@ -84,6 +77,8 @@ module.exports = {
   removeContact,
   validateId,
 };
+
+// Второй вариант
 
 // class ContactController {
 //   listContacts(req, res) {

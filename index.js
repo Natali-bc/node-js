@@ -1,6 +1,3 @@
-// const argv = require('yargs').argv;
-// const cors = require('cors');
-// const morgan = require('morgan');
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -47,6 +44,9 @@ function listen(app) {
     console.log('Server is listening on port', PORT);
   });
 }
+
+// Второй вариант
+
 // class Server {
 //   constructor() {
 //     this.server = null;
