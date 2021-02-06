@@ -12,7 +12,7 @@ const ContactSchema = new Schema({
     unique: true,
     validate: value => value.includes('@'),
   },
-  password: {
+  phone: {
     type: String,
     required: true,
   },
