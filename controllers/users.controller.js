@@ -6,10 +6,9 @@ const Joi = require('joi');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const Avatar = require('avatar-builder');
 const User = require('../models/User');
-const mongoose = require('mongoose');
-
-mongoose.set('useFindAndModify', false);
 
 dotenv.config();
 
@@ -17,16 +16,26 @@ async function createUser(req, res) {
   try {
     const { body } = req;
     const hashedPassword = await bcrypt.hash(body.password, 14);
+
+    const avatar = Avatar.catBuilder(128);
+    avatar.create('gabriel').then(buffer => {
+      fs.writeFileSync('`tmp/${Date.now()}.png`', buffer);
+    });
+    minifyImage();
+    const userAvatar = `http://locahost:8080/images/${Date.now()}.png`;
     const user = await User.create({
       ...body,
       password: hashedPassword,
       token: null,
+      avatarUrl: userAvatar,
     });
-    const { email, subscription } = user;
+    const { email, subscription, avatarUrl } = user;
+
     res.status(201).json({
       user: {
         email: email,
         subscription: subscription,
+        avatarUrl: avatarUrl,
       },
     });
   } catch (error) {
@@ -91,6 +100,7 @@ async function authorize(req, res, next) {
     return res.status(401).send('Not authorized');
   }
 }
+
 async function logoutUser(req, res) {
   const { _id } = req.user;
   const userById = await User.findByIdAndUpdate(_id, { token: null });
