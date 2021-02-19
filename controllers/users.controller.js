@@ -19,10 +19,13 @@ async function createUser(req, res) {
 
     const avatar = Avatar.catBuilder(128);
     avatar.create('gabriel').then(buffer => {
-      fs.writeFileSync('`tmp/${Date.now()}.png`', buffer);
+      fs.writeFileSync('tmp/avatar.png', buffer);
     });
-    minifyImage();
-    const userAvatar = `http://locahost:8080/images/${Date.now()}.png`;
+    const nameAvatar = Date.now();
+    fs.rename('tmp/avatar.png', `public/images/${nameAvatar}.png`);
+
+    const userAvatar = `http://locahost:8080/images/${nameAvatar}.png`;
+
     const user = await User.create({
       ...body,
       password: hashedPassword,
