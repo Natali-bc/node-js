@@ -6,7 +6,8 @@ const Joi = require('joi');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
+const fs = require('fs').promises;
+const multer = require('multer');
 const Avatar = require('avatar-builder');
 const User = require('../models/User');
 
@@ -18,31 +19,53 @@ async function createUser(req, res) {
     const hashedPassword = await bcrypt.hash(body.password, 14);
 
     const avatar = Avatar.catBuilder(128);
-    avatar.create('gabriel').then(buffer => {
-      fs.writeFileSync('tmp/avatar.png', buffer);
+    avatar.create().then(buffer => {
+      fs.writeFile('tmp/avatar.png', buffer);
     });
     const nameAvatar = Date.now();
     fs.rename('tmp/avatar.png', `public/images/${nameAvatar}.png`);
 
-    const userAvatar = `http://locahost:8080/images/${nameAvatar}.png`;
+    const userAvatar = `http://localhost:8080/images/${nameAvatar}.png`;
 
     const user = await User.create({
       ...body,
       password: hashedPassword,
       token: null,
-      avatarUrl: userAvatar,
+      avatarURL: userAvatar,
     });
-    const { email, subscription, avatarUrl } = user;
+    const { email, subscription } = user;
 
     res.status(201).json({
       user: {
         email: email,
         subscription: subscription,
-        avatarUrl: avatarUrl,
       },
     });
   } catch (error) {
     res.status(409).send('Email in use');
+  }
+}
+
+async function updateUserData(req, res) {
+  try {
+    const { _id } = req.user;
+    const { filename } = req.file;
+    const updatedUserData = await User.findByIdAndUpdate(
+      _id,
+      { avatarURL: `http://localhost:8080/images/${filename}` },
+      {
+        new: true,
+      },
+    );
+
+    if (!updatedUserData) {
+      return res.status(401).send('Not authorized');
+    }
+    res.status(200).json({
+      avatarURL: updateUserData.avatarURL,
+    });
+  } catch (error) {
+    return res.status(401).send('Not authorized');
   }
 }
 
@@ -139,6 +162,7 @@ function validateUserInfo(req, res, next) {
 
 module.exports = {
   createUser,
+  updateUserData,
   loginUser,
   authorize,
   logoutUser,
