@@ -7,7 +7,6 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const fs = require('fs').promises;
-const multer = require('multer');
 const Avatar = require('avatar-builder');
 const User = require('../models/User');
 
@@ -39,6 +38,7 @@ async function createUser(req, res) {
       user: {
         email: email,
         subscription: subscription,
+        avatarURL: avatarURL,
       },
     });
   } catch (error) {
