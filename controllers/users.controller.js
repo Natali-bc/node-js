@@ -32,7 +32,7 @@ async function createUser(req, res) {
       token: null,
       avatarURL: userAvatar,
     });
-    const { email, subscription } = user;
+    const { email, subscription, avatarURL } = user;
 
     res.status(201).json({
       user: {
@@ -62,7 +62,7 @@ async function updateUserData(req, res) {
       return res.status(401).send('Not authorized');
     }
     res.status(200).json({
-      avatarURL: updateUserData.avatarURL,
+      avatarURL: updateUserData,
     });
   } catch (error) {
     return res.status(401).send('Not authorized');

@@ -9,11 +9,10 @@ const router = Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'tmp');
+    cb(null, './public/images/');
   },
   filename: function (req, file, cb) {
-    const { ext } = path.parse(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
+    cb(null, `${Date.now()}.png`);
   },
 });
 
