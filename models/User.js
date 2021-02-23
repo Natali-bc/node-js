@@ -17,6 +17,8 @@ const UserSchema = new Schema({
     enum: ['free', 'pro', 'premium'],
     default: 'free',
   },
+  avatarURL: String,
+
   token: String,
 });
 

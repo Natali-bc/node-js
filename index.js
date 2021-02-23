@@ -23,6 +23,7 @@ function initServer() {
 
 function connectMiddlewares(app) {
   app.use(express.json());
+  app.use('/images', express.static('public/images'));
 }
 function declareRoutes(app) {
   app.use('/api/contacts', contactRouter);
@@ -34,6 +35,7 @@ async function connectToDb() {
     await mongoose.connect(process.env.MONGO_URL, {
       userNewUrlParser: true,
       useUnifiedTopology: true,
+      useFindAndModify: false,
     });
     console.log('Database connection successful');
   } catch (error) {

@@ -6,10 +6,9 @@ const Joi = require('joi');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+const fs = require('fs').promises;
+const Avatar = require('avatar-builder');
 const User = require('../models/User');
-const mongoose = require('mongoose');
-
-mongoose.set('useFindAndModify', false);
 
 dotenv.config();
 
@@ -17,20 +16,56 @@ async function createUser(req, res) {
   try {
     const { body } = req;
     const hashedPassword = await bcrypt.hash(body.password, 14);
+
+    const avatar = Avatar.catBuilder(128);
+    avatar.create().then(buffer => {
+      fs.writeFile('tmp/avatar.png', buffer);
+    });
+    const nameAvatar = Date.now();
+    fs.rename('tmp/avatar.png', `public/images/${nameAvatar}.png`);
+
+    const userAvatar = `http://localhost:8080/images/${nameAvatar}.png`;
+
     const user = await User.create({
       ...body,
       password: hashedPassword,
       token: null,
+      avatarURL: userAvatar,
     });
-    const { email, subscription } = user;
+    const { email, subscription, avatarURL } = user;
+
     res.status(201).json({
       user: {
         email: email,
         subscription: subscription,
+        avatarURL: avatarURL,
       },
     });
   } catch (error) {
     res.status(409).send('Email in use');
+  }
+}
+
+async function updateUserData(req, res) {
+  try {
+    const { _id } = req.user;
+    const { filename } = req.file;
+    const updatedUserData = await User.findByIdAndUpdate(
+      _id,
+      { avatarURL: `http://localhost:8080/images/${filename}` },
+      {
+        new: true,
+      },
+    );
+
+    if (!updatedUserData) {
+      return res.status(401).send('Not authorized');
+    }
+    res.status(200).json({
+      avatarURL: updateUserData,
+    });
+  } catch (error) {
+    return res.status(401).send('Not authorized');
   }
 }
 
@@ -91,6 +126,7 @@ async function authorize(req, res, next) {
     return res.status(401).send('Not authorized');
   }
 }
+
 async function logoutUser(req, res) {
   const { _id } = req.user;
   const userById = await User.findByIdAndUpdate(_id, { token: null });
@@ -126,6 +162,7 @@ function validateUserInfo(req, res, next) {
 
 module.exports = {
   createUser,
+  updateUserData,
   loginUser,
   authorize,
   logoutUser,
