@@ -18,7 +18,7 @@ const UserSchema = new Schema({
     default: 'free',
   },
   avatarURL: String,
-
+  verificationToken: String,
   token: String,
 });
 
