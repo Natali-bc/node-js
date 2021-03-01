@@ -61,5 +61,6 @@ router.patch(
   minifyImage,
   UserController.updateUserData,
 );
+router.get('/auth/verify/:verificationToken', UserController.verifyEmail);
 
 module.exports = router;

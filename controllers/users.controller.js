@@ -7,8 +7,10 @@ const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const fs = require('fs').promises;
+const { v4: uuidv4 } = require('uuid');
 const Avatar = require('avatar-builder');
 const User = require('../models/User');
+const { sendEmail } = require('../email/email');
 
 dotenv.config();
 
@@ -26,13 +28,17 @@ async function createUser(req, res) {
 
     const userAvatar = `http://localhost:8080/images/${nameAvatar}.png`;
 
+    const verificationToken = uuidv4();
+
     const user = await User.create({
       ...body,
       password: hashedPassword,
       token: null,
       avatarURL: userAvatar,
+      verificationToken,
     });
     const { email, subscription, avatarURL } = user;
+    sendEmail(verificationToken, email);
 
     res.status(201).json({
       user: {
@@ -145,6 +151,21 @@ async function getCurrentUser(req, res) {
   return res.status(200).send({ email: email, subscription: subscription });
 }
 
+async function verifyEmail(req, res) {
+  const { _id } = req.user;
+  const {
+    params: { verificationToken },
+  } = req;
+
+  const user = await User.findOne({ verificationToken });
+
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+  await User.findByIdAndUpdate(_id, { verificationToken: null });
+  return res.status(200);
+}
+
 function validateUserInfo(req, res, next) {
   const validationRules = Joi.object().keys({
     email: Joi.string().required(),
@@ -167,5 +188,6 @@ module.exports = {
   authorize,
   logoutUser,
   getCurrentUser,
+  verifyEmail,
   validateUserInfo,
 };
