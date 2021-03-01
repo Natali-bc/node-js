@@ -4,7 +4,6 @@ const multer = require('multer');
 const imagemin = require('imagemin');
 const imageminJpegtran = require('imagemin-jpegtran');
 const imageminPngquant = require('imagemin-pngquant');
-const { sendEmail } = require('../email/email');
 
 const router = Router();
 
@@ -62,6 +61,6 @@ router.patch(
   minifyImage,
   UserController.updateUserData,
 );
-router.get('/auth/verify/:verificationToken', verifyEmail);
+router.get('/auth/verify/:verificationToken', UserController.verifyEmail);
 
 module.exports = router;

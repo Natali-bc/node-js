@@ -18,11 +18,8 @@ function sendEmail(verificationToken, email) {
     from: 'natalibc123@gmail.com',
     to: email,
     subject: 'Nodemailer test',
-    html: (
-      <a href="`http://localhost:8080/auth/verify/:${verificationToken}`">
-        Перейдите по ссылке для подтверждения e-mail
-      </a>
-    ),
+    html:
+      '<a href=`http://localhost:8080/auth/verify/:${verificationToken}`>Перейдите по ссылке для подтверждения e-mail</a>',
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
